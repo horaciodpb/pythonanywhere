@@ -1,0 +1,84 @@
+{% extends "./base.html"%}
+{% block title %} Graficos {% endblock %}
+{% block body%}
+<br></br>
+<div class="container">
+    <label for="circuito">Circuito Electoral:</label>
+    <select id="circuito" name="circuito">
+        <option value="">Seleccione un circuito</option>
+        <option value="Todos los circuitos">Todos los circuitos</option>
+        <option value="107">107</option>
+        <option value="107A">107A</option>
+        <option value="107B">107B</option>
+        <option value="107C">107C</option>
+        <option value="108">108</option>
+        <option value="109">109</option>
+        <option value="110">110</option>
+        <option value="111">111</option>
+        <option value="112">112</option>
+        <option value="113">113</option>
+        <option value="114">114</option>
+        <option value="115">115</option>
+        <option value="116">116</option>
+        <option value="117">117</option>
+        <option value="117A">117A</option>
+        <option value="118">118</option>
+        <option value="119">119</option>
+        <option value="120">120</option>
+        <option value="121">121</option>
+        <option value="122">122</option>
+        <option value="123">123</option>
+        <option value="124">124</option>
+    </select>
+</div>
+<div>
+    <canvas id="myChart"></canvas>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('myChart');
+    const circuitoSelect = document.getElementById('circuito');
+    circuitoSelect.addEventListener('change', function() {
+        const circuito = circuitoSelect.value;
+        console.log("PRINT DE circuitoSelect: " + circuitoSelect.value);
+        console.log("PRINT DE circuito = circuitoSelect.value: " + circuito);
+        fetch('{% url 'generar_grafico' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                circuito: circuito,
+            })
+        })
+        
+        .then(response => response.json())
+        .then(data => {
+            // Destruir el gráfico anterior antes de crear uno nuevo
+            let myChart = Chart.getChart(ctx);
+            if (myChart) {
+                myChart.destroy();
+            }
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: '# de votos',
+                        data: data.datos,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    });
+  </script>
+{% endblock %}
